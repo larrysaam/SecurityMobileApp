@@ -1,9 +1,12 @@
 module.exports = function (api) {
   api.cache(true);
   return {
-    presets: ['babel-preset-expo'],
+    presets: [
+      ['babel-preset-expo', {
+        jsxRuntime: 'classic'
+      }]
+    ],
     plugins: [
-      '@babel/plugin-transform-react-jsx',
       // Enable React Fast Refresh
       process.env.NODE_ENV !== 'production' && 'react-refresh/babel',
     ].filter(Boolean),

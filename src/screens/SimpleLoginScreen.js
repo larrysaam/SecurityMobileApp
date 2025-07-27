@@ -11,10 +11,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SIZES } from '../constants';
+import { useAuth } from '../store/AuthContext';
+import ConnectionTest from '../components/ConnectionTest';
 
 const SimpleLoginScreen = ({ navigation }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { login } = useAuth();
+  const [email, setEmail] = useState('agent@bahin.com');
+  const [password, setPassword] = useState('password123');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -24,25 +27,39 @@ const SimpleLoginScreen = ({ navigation }) => {
       return;
     }
 
+    console.log('🔐 Login attempt with:', { email, password: password.substring(0, 3) + '***' });
     setLoading(true);
-    
-    // Simulate login delay
-    setTimeout(() => {
-      setLoading(false);
-      
-      // Simple role-based navigation
-      if (email.includes('admin')) {
-        navigation.replace('AdminDashboard');
-      } else if (email.includes('supervisor')) {
-        navigation.replace('SupervisorDashboard');
-      } else if (email.includes('agent')) {
-        navigation.replace('AgentDashboard');
-      } else if (email.includes('client')) {
-        navigation.replace('ClientDashboard');
+
+    try {
+      const result = await login(email, password);
+
+      if (result.success) {
+        // Navigate based on user role
+        switch (result.user.role) {
+          case 'admin':
+            navigation.replace('AdminDashboardMain');
+            break;
+          case 'supervisor':
+            navigation.replace('SupervisorDashboard');
+            break;
+          case 'agent':
+            navigation.replace('AgentDashboard');
+            break;
+          case 'client':
+            navigation.replace('ClientDashboard');
+            break;
+          default:
+            Alert.alert('Error', 'Unknown user role');
+        }
       } else {
-        Alert.alert('Demo Login', 'Try using:\n• admin@bahin.com\n• supervisor@bahin.com\n• agent@bahin.com\n• client@bahin.com\n\nPassword: password123');
+        Alert.alert('Error', result.error || 'Invalid email or password');
       }
-    }, 1000);
+    } catch (error) {
+      console.error('Login error:', error);
+      Alert.alert('Error', 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -117,6 +134,9 @@ const SimpleLoginScreen = ({ navigation }) => {
             {loading ? 'Signing In...' : 'Sign In'}
           </Text>
         </TouchableOpacity>
+
+        {/* Connection Status */}
+        <ConnectionTest />
 
         {/* Demo Info */}
         <View style={styles.demoInfo}>

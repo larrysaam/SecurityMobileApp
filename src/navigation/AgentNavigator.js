@@ -5,7 +5,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { SCREENS, COLORS } from '../constants';
 
 // Import Agent Screens
+import SimpleAgentDashboardScreen from '../screens/agent/SimpleAgentDashboardScreen';
 import AgentDashboardScreen from '../screens/agent/AgentDashboardScreen';
+import ScheduleDetailsScreen from '../screens/agent/ScheduleDetailsScreen';
+import SimpleScheduleDetailsScreen from '../screens/agent/SimpleScheduleDetailsScreen';
+import QRClockInScreen from '../screens/agent/QRClockInScreen';
+import GPSClockInScreen from '../screens/agent/GPSClockInScreen';
+import PatrolReportScreen from '../screens/agent/PatrolReportScreen';
+import IncidentAlertScreen from '../screens/agent/IncidentAlertScreen';
+import ChatScreen from '../screens/agent/ChatScreen';
 import CheckInScreen from '../screens/agent/CheckInScreen';
 import CheckOutScreen from '../screens/agent/CheckOutScreen';
 import ReportsScreen from '../screens/agent/ReportsScreen';
@@ -18,6 +26,8 @@ import MessagingScreen from '../screens/messaging/MessagingScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+
+
 
 // Stack Navigator pour les rapports
 const ReportsStack = () => (
@@ -51,11 +61,36 @@ const AlertsStack = () => (
   </Stack.Navigator>
 );
 
+// Stack Navigator for Dashboard
+const DashboardStack = () => (
+  <Stack.Navigator>
+    <Stack.Screen
+      name="DashboardHome"
+      component={SimpleAgentDashboardScreen}
+      options={{ headerShown: false }}
+    />
+    <Stack.Screen
+      name="ScheduleDetailsScreen"
+      component={ScheduleDetailsScreen}
+      options={{
+        title: 'Schedule Details',
+        headerStyle: {
+          backgroundColor: COLORS.PRIMARY,
+        },
+        headerTintColor: COLORS.WHITE,
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    />
+  </Stack.Navigator>
+);
+
 // Stack Navigator pour le pointage
 const TrackingStack = () => (
   <Stack.Navigator>
-    <Stack.Screen 
-      name="CheckInOut" 
+    <Stack.Screen
+      name="CheckInOut"
       component={CheckInScreen}
       options={{ title: 'Check In/Out' }}
     />
@@ -69,6 +104,71 @@ const TrackingStack = () => (
 
 const AgentNavigator = () => {
   return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+
+      <Stack.Screen
+        name="Schedule"
+        component={ScheduleScreen}
+        options={{
+          presentation: 'modal',
+          headerShown: true,
+          title: 'My Schedule',
+          headerStyle: {
+            backgroundColor: COLORS.PRIMARY,
+          },
+          headerTintColor: COLORS.WHITE,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
+      <Stack.Screen
+        name="QRClockIn"
+        component={QRClockInScreen}
+        options={{
+          presentation: 'modal',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="GPSClockIn"
+        component={GPSClockInScreen}
+        options={{
+          presentation: 'modal',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="PatrolReport"
+        component={PatrolReportScreen}
+        options={{
+          presentation: 'modal',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="IncidentAlert"
+        component={IncidentAlertScreen}
+        options={{
+          presentation: 'modal',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="Chat"
+        component={ChatScreen}
+        options={{
+          presentation: 'modal',
+          headerShown: false,
+        }}
+      />
+    </Stack.Navigator>
+  );
+};
+
+const MainTabNavigator = () => {
+  return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
@@ -76,25 +176,19 @@ const AgentNavigator = () => {
 
           switch (route.name) {
             case 'Dashboard':
-              iconName = focused ? 'home' : 'home-outline';
+              iconName = focused ? 'grid' : 'grid-outline';
               break;
             case 'Tracking':
-              iconName = focused ? 'location' : 'location-outline';
+              iconName = focused ? 'time' : 'time-outline';
               break;
             case 'Reports':
               iconName = focused ? 'document-text' : 'document-text-outline';
               break;
-            case 'Schedule':
-              iconName = focused ? 'calendar' : 'calendar-outline';
-              break;
             case 'Alerts':
               iconName = focused ? 'alert-circle' : 'alert-circle-outline';
               break;
-            case 'Messages':
-              iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
-              break;
-            case 'Profile':
-              iconName = focused ? 'person' : 'person-outline';
+            case 'Chat':
+              iconName = focused ? 'chatbubble' : 'chatbubble-outline';
               break;
             default:
               iconName = 'help-outline';
@@ -120,12 +214,13 @@ const AgentNavigator = () => {
         },
       })}
     >
-      <Tab.Screen 
-        name="Dashboard" 
-        component={AgentDashboardScreen}
+      <Tab.Screen
+        name="Dashboard"
+        component={DashboardStack}
         options={{
-          title: 'Home',
-          tabBarLabel: 'Home',
+          title: 'Dashboard',
+          tabBarLabel: 'Dashboard',
+          headerShown: false,
         }}
       />
 
@@ -133,8 +228,8 @@ const AgentNavigator = () => {
         name="Tracking"
         component={TrackingStack}
         options={{
-          title: 'Check In/Out',
-          tabBarLabel: 'Check In/Out',
+          title: 'Clock In/Out',
+          tabBarLabel: 'Clock In/Out',
           headerShown: false,
         }}
       />
@@ -150,15 +245,6 @@ const AgentNavigator = () => {
       />
 
       <Tab.Screen
-        name="Schedule"
-        component={ScheduleScreen}
-        options={{
-          title: 'Schedule',
-          tabBarLabel: 'Schedule',
-        }}
-      />
-
-      <Tab.Screen
         name="Alerts"
         component={AlertsStack}
         options={{
@@ -170,21 +256,12 @@ const AgentNavigator = () => {
       />
 
       <Tab.Screen
-        name="Messages"
+        name="Chat"
         component={MessagingScreen}
         options={{
-          title: 'Messages',
-          tabBarLabel: 'Messages',
+          title: 'Chat',
+          tabBarLabel: 'Chat',
           tabBarBadge: null, // Will be updated dynamically
-        }}
-      />
-
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{
-          title: 'Profile',
-          tabBarLabel: 'Profile',
         }}
       />
     </Tab.Navigator>

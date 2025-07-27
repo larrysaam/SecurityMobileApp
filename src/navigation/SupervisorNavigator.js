@@ -5,6 +5,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { SCREENS, COLORS } from '../constants';
 
 // Import Supervisor Screens
+import SupervisorDashboardScreen from '../screens/supervisor/SupervisorDashboardScreen';
+import SupervisorScheduleScreen from '../screens/supervisor/SupervisorScheduleScreen';
+import SupervisorTeamScreen from '../screens/supervisor/SupervisorTeamScreen';
 import MessagingScreen from '../screens/messaging/MessagingScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import PlaceholderScreen from '../screens/PlaceholderScreen';
@@ -12,18 +15,24 @@ import PlaceholderScreen from '../screens/PlaceholderScreen';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-// Stack Navigator for agent tracking
+// Stack Navigator for team management
 const TrackingStack = () => (
   <Stack.Navigator>
     <Stack.Screen
-      name="AgentsList"
-      component={PlaceholderScreen}
-      options={{ title: 'Agent Tracking' }}
+      name="SupervisorTeam"
+      component={SupervisorTeamScreen}
+      options={{
+        title: 'Team Management',
+        headerShown: false
+      }}
     />
     <Stack.Screen
-      name="AgentDetail"
-      component={PlaceholderScreen}
-      options={{ title: 'Agent Details' }}
+      name="SupervisorSchedule"
+      component={SupervisorScheduleScreen}
+      options={{
+        title: 'All Schedules',
+        headerShown: false
+      }}
     />
   </Stack.Navigator>
 );
@@ -72,6 +81,17 @@ const InspectionStack = () => (
       name="CreateInspection"
       component={PlaceholderScreen}
       options={{ title: 'New Inspection' }}
+    />
+  </Stack.Navigator>
+);
+
+// Stack Navigator for dashboard
+const DashboardStack = () => (
+  <Stack.Navigator>
+    <Stack.Screen
+      name="SupervisorDashboard"
+      component={SupervisorDashboardScreen}
+      options={{ headerShown: false }}
     />
   </Stack.Navigator>
 );
@@ -131,10 +151,11 @@ const SupervisorNavigator = () => {
     >
       <Tab.Screen
         name="Dashboard"
-        component={PlaceholderScreen}
+        component={DashboardStack}
         options={{
           title: 'Dashboard',
           tabBarLabel: 'Home',
+          headerShown: false,
         }}
       />
 
@@ -142,8 +163,8 @@ const SupervisorNavigator = () => {
         name="Tracking"
         component={TrackingStack}
         options={{
-          title: 'Agent Tracking',
-          tabBarLabel: 'Agents',
+          title: 'Team Management',
+          tabBarLabel: 'Team',
           headerShown: false,
         }}
       />

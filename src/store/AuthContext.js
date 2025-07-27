@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { storage } from '../utils';
-import ApiService from '../services/api';
+import apiService from '../services/apiService';
 
 
 // Initial state
@@ -89,25 +89,32 @@ export const AuthProvider = ({ children }) => {
   const initializeAuth = async () => {
     try {
       dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true });
-      
+
       // Initialize API service
-      await ApiService.init();
-      
+      await apiService.initialize();
+
       // Check for stored user data
-      const storedUser = await storage.getItem('user');
-      const storedToken = await storage.getItem('authToken');
+      const storedUser = await apiService.getStoredUser();
+      const storedToken = apiService.token;
 
       if (storedUser && storedToken) {
         // Verify token is still valid
         try {
-          const profile = await ApiService.getProfile();
-          dispatch({
-            type: AUTH_ACTIONS.LOGIN_SUCCESS,
-            payload: { user: profile },
-          });
+          const response = await apiService.getCurrentUser();
+          if (response.success) {
+            dispatch({
+              type: AUTH_ACTIONS.LOGIN_SUCCESS,
+              payload: { user: response.data.user },
+            });
+          } else {
+            // Token is invalid, clear stored data
+            await apiService.clearTokens();
+            dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
+          }
         } catch (error) {
           // Token is invalid, clear stored data
-          await logout();
+          await apiService.clearTokens();
+          dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
         }
       } else {
         dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
@@ -118,18 +125,25 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (credentials) => {
+  const login = async (email, password) => {
     try {
       dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true });
-      
-      const response = await ApiService.login(credentials);
-      
-      dispatch({
-        type: AUTH_ACTIONS.LOGIN_SUCCESS,
-        payload: { user: response.user },
-      });
 
-      return { success: true };
+      const response = await apiService.login(email, password);
+
+      if (response.success) {
+        dispatch({
+          type: AUTH_ACTIONS.LOGIN_SUCCESS,
+          payload: { user: response.data.user },
+        });
+        return { success: true, user: response.data.user };
+      } else {
+        dispatch({
+          type: AUTH_ACTIONS.LOGIN_FAILURE,
+          payload: response.message || 'Login failed',
+        });
+        return { success: false, error: response.message || 'Login failed' };
+      }
     } catch (error) {
       const errorMessage = error.message || 'Login error';
       dispatch({
@@ -143,7 +157,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await ApiService.logout();
+      await apiService.logout();
     } catch (error) {
       console.error('Error during logout:', error);
     } finally {
@@ -153,17 +167,21 @@ export const AuthProvider = ({ children }) => {
 
   const updateUser = async (userData) => {
     try {
-      const updatedUser = await ApiService.updateProfile(userData);
-      
-      dispatch({
-        type: AUTH_ACTIONS.UPDATE_USER,
-        payload: updatedUser,
-      });
+      const response = await apiService.updateProfile(userData);
 
-      // Update stored user data
-      await storage.setItem('user', { ...state.user, ...updatedUser });
-      
-      return { success: true };
+      if (response.success) {
+        dispatch({
+          type: AUTH_ACTIONS.UPDATE_USER,
+          payload: response.data,
+        });
+
+        // Update stored user data
+        await apiService.storeUser({ ...state.user, ...response.data });
+
+        return { success: true };
+      } else {
+        return { success: false, error: response.message || 'Update failed' };
+      }
     } catch (error) {
       const errorMessage = error.message || 'Update error';
       return { success: false, error: errorMessage };
@@ -172,8 +190,8 @@ export const AuthProvider = ({ children }) => {
 
   const refreshToken = async () => {
     try {
-      await ApiService.refreshToken();
-      return { success: true };
+      const success = await apiService.refreshAccessToken();
+      return { success };
     } catch (error) {
       // If refresh fails, logout user
       await logout();
@@ -189,15 +207,19 @@ export const AuthProvider = ({ children }) => {
     // State
     user: state.user,
     isAuthenticated: state.isAuthenticated,
+    loading: state.isLoading,
     isLoading: state.isLoading,
     error: state.error,
-    
+
     // Actions
     login,
     logout,
     updateUser,
     refreshToken,
     clearError,
+
+    // API Service
+    apiService,
   };
 
   return (

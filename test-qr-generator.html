@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BahinLink QR Code Generator - Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2563eb;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .qr-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .qr-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #374151;
+            margin-bottom: 15px;
+        }
+        .qr-code {
+            margin: 20px 0;
+        }
+        .qr-text {
+            font-family: monospace;
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+        .instructions {
+            background: #dbeafe;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .instructions h3 {
+            color: #1e40af;
+            margin-top: 0;
+        }
+        .site-info {
+            background: #f0f9ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔒 BahinLink QR Code Generator</h1>
+        
+        <div class="instructions">
+            <h3>📱 How to Test QR Code Clock-In:</h3>
+            <ol>
+                <li>Open the BahinLink mobile app at <strong>http://localhost:8082</strong></li>
+                <li>Login as agent: <code>agent@bahin.com</code> / <code>password123</code></li>
+                <li>Tap on any schedule in the dashboard</li>
+                <li>Tap "Clock In" → "QR Code"</li>
+                <li>Scan one of the QR codes below with your phone camera</li>
+                <li>The app will verify the QR code matches the site code</li>
+            </ol>
+        </div>
+
+        <!-- Corporate Office QR Code -->
+        <div class="qr-section">
+            <div class="qr-title">🏢 Corporate Office</div>
+            <div class="site-info">
+                <strong>Site Name:</strong> Corporate Office<br>
+                <strong>Address:</strong> 123 Business Ave, Downtown, City 12345<br>
+                <strong>QR Code:</strong> <span class="qr-text">QR_CORPORATE_001</span>
+            </div>
+            <canvas id="qr-corporate" class="qr-code"></canvas>
+        </div>
+
+        <!-- Industrial Warehouse QR Code -->
+        <div class="qr-section">
+            <div class="qr-title">🏭 Industrial Warehouse</div>
+            <div class="site-info">
+                <strong>Site Name:</strong> Industrial Warehouse<br>
+                <strong>Address:</strong> 456 Industrial Blvd, Warehouse District, City 12346<br>
+                <strong>QR Code:</strong> <span class="qr-text">QR_WAREHOUSE_002</span>
+            </div>
+            <canvas id="qr-warehouse" class="qr-code"></canvas>
+        </div>
+
+        <!-- Shopping Mall QR Code -->
+        <div class="qr-section">
+            <div class="qr-title">🛍️ Shopping Mall</div>
+            <div class="site-info">
+                <strong>Site Name:</strong> Shopping Mall<br>
+                <strong>Address:</strong> 789 Retail Plaza, Shopping District, City 12347<br>
+                <strong>QR Code:</strong> <span class="qr-text">QR_MALL_003</span>
+            </div>
+            <canvas id="qr-mall" class="qr-code"></canvas>
+        </div>
+
+        <!-- Residential Complex QR Code -->
+        <div class="qr-section">
+            <div class="qr-title">🏠 Residential Complex</div>
+            <div class="site-info">
+                <strong>Site Name:</strong> Residential Complex<br>
+                <strong>Address:</strong> 321 Residential Way, Suburb Area, City 12348<br>
+                <strong>QR Code:</strong> <span class="qr-text">QR_RESIDENTIAL_004</span>
+            </div>
+            <canvas id="qr-residential" class="qr-code"></canvas>
+        </div>
+
+        <!-- Hospital QR Code -->
+        <div class="qr-section">
+            <div class="qr-title">🏥 Hospital</div>
+            <div class="site-info">
+                <strong>Site Name:</strong> Hospital<br>
+                <strong>Address:</strong> 654 Medical Center Dr, Healthcare District, City 12349<br>
+                <strong>QR Code:</strong> <span class="qr-text">QR_HOSPITAL_005</span>
+            </div>
+            <canvas id="qr-hospital" class="qr-code"></canvas>
+        </div>
+
+        <div class="instructions">
+            <h3>✅ Expected Behavior:</h3>
+            <ul>
+                <li><strong>Correct QR Code:</strong> Shows success message and clocks in the agent</li>
+                <li><strong>Wrong QR Code:</strong> Shows error message with expected vs scanned code</li>
+                <li><strong>Invalid QR Code:</strong> Shows "Invalid QR Code" error</li>
+                <li><strong>GPS Location:</strong> Automatically captured for verification</li>
+                <li><strong>Timestamp:</strong> Recorded with precise clock-in time</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Generate QR codes for each site
+        const sites = [
+            { id: 'qr-corporate', code: 'QR_CORPORATE_001' },
+            { id: 'qr-warehouse', code: 'QR_WAREHOUSE_002' },
+            { id: 'qr-mall', code: 'QR_MALL_003' },
+            { id: 'qr-residential', code: 'QR_RESIDENTIAL_004' },
+            { id: 'qr-hospital', code: 'QR_HOSPITAL_005' }
+        ];
+
+        sites.forEach(site => {
+            const canvas = document.getElementById(site.id);
+            QRCode.toCanvas(canvas, site.code, {
+                width: 200,
+                height: 200,
+                color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                }
+            }, function (error) {
+                if (error) console.error('Error generating QR code for', site.id, error);
+                else console.log('QR code generated for', site.id);
+            });
+        });
+    </script>
+</body>
+</html>

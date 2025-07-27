@@ -11,12 +11,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SIZES } from '../../constants';
-import AdminBottomNavbar from '../../components/AdminBottomNavbar';
+import ClientBottomNavbar from '../../components/ClientBottomNavbar';
 import { useAuth } from '../../store/AuthContext';
 
 const { width } = Dimensions.get('window');
 
-const AdminDashboardScreen = ({ navigation }) => {
+const ClientDashboardScreen = ({ navigation }) => {
   const { user, apiService } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [dashboardData, setDashboardData] = useState(null);
@@ -29,8 +29,8 @@ const AdminDashboardScreen = ({ navigation }) => {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const response = await apiService.request('/admin/dashboard');
-
+      const response = await apiService.request('/client/dashboard');
+      
       if (response.success) {
         setDashboardData(response.data);
       } else {
@@ -58,50 +58,42 @@ const AdminDashboardScreen = ({ navigation }) => {
   };
 
   const stats = dashboardData?.stats || {
-    totalUsers: 0,
-    activeUsers: 0,
     totalSites: 0,
     activeSites: 0,
     totalReports: 0,
     pendingReports: 0,
-    openAlerts: 0,
-  };
-
-  const usersByRole = dashboardData?.usersByRole || {
-    admin: 0,
-    supervisor: 0,
-    agent: 0,
-    client: 0,
+    unreadNotifications: 0,
+    activeAgents: 0,
   };
 
   const quickActions = [
     {
-      id: 'add-user',
-      title: 'Add User',
-      icon: 'person-add',
+      id: 'view-sites',
+      title: 'View Sites',
+      icon: 'business',
       color: COLORS.PRIMARY,
-      onPress: () => navigation.navigate('AdminUsers', { action: 'create' }),
+      onPress: () => navigation.navigate('ClientSites'),
     },
     {
-      id: 'add-site',
-      title: 'Add Site',
-      icon: 'location',
-      color: COLORS.SUCCESS,
-      onPress: () => navigation.navigate('AdminSites', { action: 'create' }),
-    },
-    {
-      id: 'view-reports',
-      title: 'View Reports',
+      id: 'recent-reports',
+      title: 'Recent Reports',
       icon: 'document-text',
       color: COLORS.INFO,
-      onPress: () => navigation.navigate('AdminReports'),
+      onPress: () => navigation.navigate('ClientReports'),
     },
     {
-      id: 'system-alerts',
-      title: 'System Alerts',
-      icon: 'alert-circle',
+      id: 'send-message',
+      title: 'Contact Security',
+      icon: 'chatbubbles',
+      color: COLORS.SUCCESS,
+      onPress: () => navigation.navigate('ClientCommunication'),
+    },
+    {
+      id: 'view-analytics',
+      title: 'View Analytics',
+      icon: 'analytics',
       color: COLORS.WARNING,
-      onPress: () => navigation.navigate('AdminAlerts'),
+      onPress: () => navigation.navigate('ClientAnalytics'),
     },
   ];
 
@@ -126,40 +118,40 @@ const AdminDashboardScreen = ({ navigation }) => {
         <View style={styles.header}>
           <View style={styles.headerContent}>
             <Text style={styles.greeting}>
-              {getGreeting()}, {user?.firstName || 'Admin'}!
+              {getGreeting()}, {user?.firstName || 'Client'}!
             </Text>
-            <Text style={styles.subtitle}>System Overview & Management</Text>
+            <Text style={styles.subtitle}>Security Service Overview</Text>
           </View>
           <View style={styles.profileSection}>
             <View style={styles.avatar}>
-              <Ionicons name="shield-checkmark" size={24} color={COLORS.WHITE} />
+              <Ionicons name="business" size={24} color={COLORS.WHITE} />
             </View>
-            <View style={styles.adminBadge}>
-              <Text style={styles.adminText}>ADMIN</Text>
+            <View style={styles.clientBadge}>
+              <Text style={styles.clientText}>CLIENT</Text>
             </View>
           </View>
         </View>
 
-        {/* Stats Overview */}
+        {/* Service Statistics */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>System Statistics</Text>
+          <Text style={styles.sectionTitle}>Service Overview</Text>
           <View style={styles.statsGrid}>
             <View style={styles.statCard}>
               <View style={[styles.statIcon, { backgroundColor: `${COLORS.PRIMARY}15` }]}>
-                <Ionicons name="people" size={24} color={COLORS.PRIMARY} />
-              </View>
-              <Text style={styles.statNumber}>{stats.totalUsers}</Text>
-              <Text style={styles.statLabel}>Total Users</Text>
-              <Text style={styles.statSubtext}>{stats.activeUsers} active</Text>
-            </View>
-
-            <View style={styles.statCard}>
-              <View style={[styles.statIcon, { backgroundColor: `${COLORS.SUCCESS}15` }]}>
-                <Ionicons name="location" size={24} color={COLORS.SUCCESS} />
+                <Ionicons name="business" size={24} color={COLORS.PRIMARY} />
               </View>
               <Text style={styles.statNumber}>{stats.totalSites}</Text>
               <Text style={styles.statLabel}>Total Sites</Text>
               <Text style={styles.statSubtext}>{stats.activeSites} active</Text>
+            </View>
+
+            <View style={styles.statCard}>
+              <View style={[styles.statIcon, { backgroundColor: `${COLORS.SUCCESS}15` }]}>
+                <Ionicons name="people" size={24} color={COLORS.SUCCESS} />
+              </View>
+              <Text style={styles.statNumber}>{stats.activeAgents}</Text>
+              <Text style={styles.statLabel}>Active Agents</Text>
+              <Text style={styles.statSubtext}>On duty now</Text>
             </View>
 
             <View style={styles.statCard}>
@@ -172,33 +164,13 @@ const AdminDashboardScreen = ({ navigation }) => {
             </View>
 
             <View style={styles.statCard}>
-              <View style={[styles.statIcon, { backgroundColor: `${COLORS.SECONDARY}15` }]}>
-                <Ionicons name="alert-circle" size={24} color={COLORS.SECONDARY} />
+              <View style={[styles.statIcon, { backgroundColor: `${COLORS.WARNING}15` }]}>
+                <Ionicons name="notifications" size={24} color={COLORS.WARNING} />
               </View>
-              <Text style={styles.statNumber}>{stats.openAlerts}</Text>
-              <Text style={styles.statLabel}>Open Alerts</Text>
-              <Text style={styles.statSubtext}>Requires attention</Text>
+              <Text style={styles.statNumber}>{stats.unreadNotifications}</Text>
+              <Text style={styles.statLabel}>Notifications</Text>
+              <Text style={styles.statSubtext}>Unread</Text>
             </View>
-          </View>
-        </View>
-
-        {/* User Distribution */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>User Distribution</Text>
-          <View style={styles.userDistribution}>
-            {Object.entries(usersByRole).map(([role, count]) => (
-              <View key={role} style={styles.roleCard}>
-                <View style={styles.roleHeader}>
-                  <Ionicons
-                    name={getRoleIcon(role)}
-                    size={20}
-                    color={getRoleColor(role)}
-                  />
-                  <Text style={styles.roleCount}>{count}</Text>
-                </View>
-                <Text style={styles.roleLabel}>{role.charAt(0).toUpperCase() + role.slice(1)}s</Text>
-              </View>
-            ))}
           </View>
         </View>
 
@@ -221,67 +193,84 @@ const AdminDashboardScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Recent Activity */}
+        {/* Recent Reports */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
-          <View style={styles.activityList}>
-            <View style={styles.activityItem}>
-              <View style={styles.activityIcon}>
-                <Ionicons name="person-add" size={16} color={COLORS.PRIMARY} />
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Recent Reports</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('ClientReports')}>
+              <Text style={styles.seeAllText}>See All</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.reportsList}>
+            {dashboardData?.recentReports?.slice(0, 3).map((report) => (
+              <View key={report.id} style={styles.reportCard}>
+                <View style={styles.reportHeader}>
+                  <View style={styles.reportInfo}>
+                    <Text style={styles.reportTitle}>{report.title}</Text>
+                    <Text style={styles.reportSite}>{report.siteName}</Text>
+                  </View>
+                  <View style={[styles.reportStatus, { 
+                    backgroundColor: getReportStatusColor(report.status) 
+                  }]}>
+                    <Text style={styles.reportStatusText}>
+                      {report.status.toUpperCase()}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.reportTime}>
+                  {new Date(report.createdAt).toLocaleDateString()}
+                </Text>
               </View>
-              <View style={styles.activityContent}>
-                <Text style={styles.activityTitle}>New user registered</Text>
-                <Text style={styles.activityTime}>2 minutes ago</Text>
+            )) || (
+              <View style={styles.emptyState}>
+                <Ionicons name="document-outline" size={48} color={COLORS.GRAY[400]} />
+                <Text style={styles.emptyText}>No recent reports</Text>
               </View>
-            </View>
+            )}
+          </View>
+        </View>
 
-            <View style={styles.activityItem}>
-              <View style={styles.activityIcon}>
-                <Ionicons name="document-text" size={16} color={COLORS.INFO} />
+        {/* Current Agents */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Agents on Duty</Text>
+          <View style={styles.agentsList}>
+            {dashboardData?.currentAgents?.map((agent, index) => (
+              <View key={index} style={styles.agentCard}>
+                <View style={styles.agentAvatar}>
+                  <Ionicons name="person" size={20} color={COLORS.PRIMARY} />
+                </View>
+                <View style={styles.agentInfo}>
+                  <Text style={styles.agentName}>{agent.agentName}</Text>
+                  <Text style={styles.agentSite}>{agent.siteName}</Text>
+                </View>
+                <View style={styles.agentStatus}>
+                  <View style={[styles.statusDot, { backgroundColor: COLORS.SUCCESS }]} />
+                  <Text style={styles.statusText}>On Duty</Text>
+                </View>
               </View>
-              <View style={styles.activityContent}>
-                <Text style={styles.activityTitle}>Report submitted</Text>
-                <Text style={styles.activityTime}>15 minutes ago</Text>
+            )) || (
+              <View style={styles.emptyState}>
+                <Ionicons name="people-outline" size={48} color={COLORS.GRAY[400]} />
+                <Text style={styles.emptyText}>No agents currently on duty</Text>
               </View>
-            </View>
-
-            <View style={styles.activityItem}>
-              <View style={styles.activityIcon}>
-                <Ionicons name="alert-circle" size={16} color={COLORS.SECONDARY} />
-              </View>
-              <View style={styles.activityContent}>
-                <Text style={styles.activityTitle}>Emergency alert received</Text>
-                <Text style={styles.activityTime}>1 hour ago</Text>
-              </View>
-            </View>
+            )}
           </View>
         </View>
 
         <View style={styles.bottomPadding} />
       </ScrollView>
 
-      <AdminBottomNavbar />
+      <ClientBottomNavbar />
     </View>
   );
 };
 
-const getRoleIcon = (role) => {
-  switch (role) {
-    case 'admin': return 'shield-checkmark';
-    case 'supervisor': return 'eye';
-    case 'agent': return 'person';
-    case 'client': return 'business';
-    default: return 'person';
-  }
-};
-
-const getRoleColor = (role) => {
-  switch (role) {
-    case 'admin': return COLORS.SECONDARY;
-    case 'supervisor': return COLORS.WARNING;
-    case 'agent': return COLORS.PRIMARY;
-    case 'client': return COLORS.SUCCESS;
-    default: return COLORS.GRAY[500];
+const getReportStatusColor = (status) => {
+  switch (status) {
+    case 'submitted': return COLORS.WARNING;
+    case 'validated': return COLORS.SUCCESS;
+    case 'pending': return COLORS.INFO;
+    default: return COLORS.GRAY[400];
   }
 };
 
@@ -331,13 +320,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  adminBadge: {
-    backgroundColor: COLORS.SECONDARY,
+  clientBadge: {
+    backgroundColor: COLORS.SUCCESS,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
   },
-  adminText: {
+  clientText: {
     color: COLORS.WHITE,
     fontSize: 10,
     fontWeight: 'bold',
@@ -350,6 +339,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: COLORS.DARK,
     marginBottom: 16,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  seeAllText: {
+    fontSize: 14,
+    color: COLORS.PRIMARY,
+    fontWeight: '600',
   },
   statsGrid: {
     flexDirection: 'row',
@@ -392,39 +392,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.GRAY[500],
   },
-  userDistribution: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  roleCard: {
-    backgroundColor: COLORS.WHITE,
-    borderRadius: SIZES.BORDER_RADIUS,
-    padding: 12,
-    flex: 1,
-    marginHorizontal: 4,
-    alignItems: 'center',
-    elevation: 1,
-    shadowColor: COLORS.BLACK,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  roleHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  roleCount: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.DARK,
-    marginLeft: 8,
-  },
-  roleLabel: {
-    fontSize: 12,
-    color: COLORS.GRAY[600],
-    textAlign: 'center',
-  },
   quickActions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -443,43 +410,110 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
   },
-  activityList: {
+  reportsList: {
     backgroundColor: COLORS.WHITE,
     borderRadius: SIZES.BORDER_RADIUS,
     padding: 16,
   },
-  activityItem: {
+  reportCard: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.GRAY[200],
+  },
+  reportHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  reportInfo: {
+    flex: 1,
+  },
+  reportTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.DARK,
+    marginBottom: 2,
+  },
+  reportSite: {
+    fontSize: 12,
+    color: COLORS.GRAY[600],
+  },
+  reportStatus: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  reportStatusText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: COLORS.WHITE,
+  },
+  reportTime: {
+    fontSize: 12,
+    color: COLORS.GRAY[500],
+  },
+  agentsList: {
+    backgroundColor: COLORS.WHITE,
+    borderRadius: SIZES.BORDER_RADIUS,
+    padding: 16,
+  },
+  agentCard: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.GRAY[200],
   },
-  activityIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: COLORS.GRAY[100],
+  agentAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: `${COLORS.PRIMARY}15`,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
-  activityContent: {
+  agentInfo: {
     flex: 1,
   },
-  activityTitle: {
+  agentName: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
     color: COLORS.DARK,
     marginBottom: 2,
   },
-  activityTime: {
+  agentSite: {
     fontSize: 12,
-    color: COLORS.GRAY[500],
+    color: COLORS.GRAY[600],
+  },
+  agentStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  statusText: {
+    fontSize: 12,
+    color: COLORS.SUCCESS,
+    fontWeight: '500',
+  },
+  emptyState: {
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: COLORS.GRAY[600],
+    marginTop: 8,
   },
   bottomPadding: {
     height: 100,
   },
 });
 
-export default AdminDashboardScreen;
+export default ClientDashboardScreen;

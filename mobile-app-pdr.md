@@ -141,6 +141,7 @@ The mobile application serves two primary user types:
 - **Notification Prioritization:** Critical alerts bypass device DND settings
 - **Offline Message Queue:** Store and forward messages when connectivity returns
 
+
 ### 3.6 Scheduling & Task Management
 
 - **Shift Calendar:** Visual calendar of assigned shifts and schedules

@@ -54,7 +54,7 @@ export const SCREENS = {
 
 // API Endpoints
 export const API_ENDPOINTS = {
-  BASE_URL: __DEV__ ? 'http://localhost:3000/api' : 'https://api.bahinlink.com',
+  BASE_URL: __DEV__ ? 'http://192.168.1.246:3000/api' : 'https://api.bahinlink.com',
   AUTH: {
     LOGIN: '/auth/login',
     REGISTER: '/auth/register',

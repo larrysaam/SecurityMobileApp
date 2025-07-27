@@ -13,6 +13,7 @@ import { useAuth } from '../../store/AuthContext';
 import { useApp } from '../../store/AppContext';
 import { COLORS, SIZES } from '../../constants';
 import { dateUtils } from '../../utils';
+import AgentBottomNavbar from '../../components/AgentBottomNavbar';
 
 const AgentDashboardScreen = ({ navigation }) => {
   const { user } = useAuth();
@@ -88,6 +89,85 @@ const AgentDashboardScreen = ({ navigation }) => {
     }
   };
 
+  const handleSchedulePress = async (scheduleItem) => {
+    try {
+      console.log('Navigating to ScheduleDetails from AgentDashboardScreen with item:', scheduleItem);
+      console.log('Navigation object available:', !!navigation);
+      console.log('Navigation methods:', Object.keys(navigation));
+
+      // Create a mock schedule object that matches the expected format
+      const mockSchedule = {
+        id: scheduleItem.id || 'mock-schedule-id',
+        agentId: user?.id || 'mock-agent-id',
+        siteId: scheduleItem.siteId || 'mock-site-id',
+        date: scheduleItem.date || new Date().toISOString(),
+        startTime: scheduleItem.startTime || '08:00',
+        endTime: scheduleItem.endTime || '16:00',
+        status: scheduleItem.status || 'scheduled',
+        site: {
+          id: scheduleItem.siteId || 'mock-site-id',
+          name: scheduleItem.siteName || 'Site Name',
+          address: scheduleItem.siteAddress || 'Site Address',
+          latitude: 40.7128,
+          longitude: -74.006,
+          geofenceRadius: 100,
+          qrCode: 'QR_CODE_001',
+          description: 'No description available',
+          contactPerson: 'Site Manager',
+          contactPhone: '+1234567890',
+          emergencyContact: 'Security',
+          emergencyPhone: '+1234567890',
+          accessInstructions: 'Use main entrance',
+          specialInstructions: 'Follow standard procedures',
+          client: {
+            id: 'mock-client-id',
+            companyName: 'Client Company',
+            contactPerson: 'Client Contact',
+            phone: '+1234567890',
+            email: 'client@company.com'
+          }
+        },
+        scheduleStatus: 'pending',
+        canClockIn: true,
+        canClockOut: false,
+        clockInTime: null,
+        clockOutTime: null,
+        workedHours: null,
+        formattedDate: new Date().toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }),
+        dayOfWeek: new Date().toLocaleDateString('en-US', { weekday: 'long' })
+      };
+
+      // Try different navigation approaches
+      console.log('Attempting navigation to ScheduleDetails...');
+
+      try {
+        // Method 1: Direct navigation (should work since we're in the same stack)
+        navigation.navigate('ScheduleDetailsScreen', {
+          schedule: mockSchedule,
+          onClockAction: () => {
+            // Refresh dashboard data
+            loadDashboardData();
+          }
+        });
+        console.log('Navigation call completed successfully');
+      } catch (navError) {
+        console.error('Direct navigation failed:', navError);
+
+        // Method 2: Fallback to Schedule tab
+        console.log('Falling back to Schedule tab navigation');
+        navigation.navigate('Schedule');
+      }
+    } catch (error) {
+      console.error('Schedule navigation error:', error);
+      Alert.alert('Error', 'Failed to open schedule details');
+    }
+  };
+
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good morning';
@@ -131,12 +211,13 @@ const AgentDashboardScreen = ({ navigation }) => {
   const shiftStatus = getShiftStatus();
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
+    <View style={styles.container}>
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -216,7 +297,11 @@ const AgentDashboardScreen = ({ navigation }) => {
         <Text style={styles.sectionTitle}>Today's Schedule</Text>
         {todaySchedule.length > 0 ? (
           todaySchedule.map((item, index) => (
-            <View key={index} style={styles.scheduleItem}>
+            <TouchableOpacity
+              key={index}
+              style={styles.scheduleItem}
+              onPress={() => handleSchedulePress(item)}
+            >
               <View style={styles.scheduleTime}>
                 <Text style={styles.timeText}>{item.startTime}</Text>
                 <Text style={styles.timeText}>-</Text>
@@ -233,7 +318,7 @@ const AgentDashboardScreen = ({ navigation }) => {
                   color={item.status === 'completed' ? COLORS.SUCCESS : COLORS.WARNING}
                 />
               </View>
-            </View>
+            </TouchableOpacity>
           ))
         ) : (
           <View style={styles.emptyState}>
@@ -257,7 +342,10 @@ const AgentDashboardScreen = ({ navigation }) => {
           <Text style={styles.activityTime}>Yesterday 22:30</Text>
         </View>
       </View>
-    </ScrollView>
+      </ScrollView>
+
+      <AgentBottomNavbar navigation={navigation} currentRoute="AgentDashboard" />
+    </View>
   );
 };
 
@@ -265,6 +353,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.GRAY[100],
+  },
+  scrollView: {
+    flex: 1,
   },
   header: {
     flexDirection: 'row',

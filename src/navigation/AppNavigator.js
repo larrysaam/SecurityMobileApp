@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 
 // Import navigators
 import AuthNavigator from './AuthNavigator';
-import AdminNavigator from './AdminNavigator';
+// import AdminNavigator from './AdminNavigator'; // Temporarily disabled to avoid conflicts
 import SupervisorNavigator from './SupervisorNavigator';
 import AgentNavigator from './AgentNavigator';
 import ClientNavigator from './ClientNavigator';
@@ -40,7 +40,7 @@ const AppNavigator = () => {
   const getRoleBasedNavigator = () => {
     switch (user?.role) {
       case USER_ROLES.ADMIN:
-        return <AdminNavigator />;
+        return <AuthNavigator />; // Temporarily using AuthNavigator for admin
       case USER_ROLES.SUPERVISOR:
         return <SupervisorNavigator />;
       case USER_ROLES.AGENT:

@@ -109,6 +109,7 @@ Update your `app.json`:
    - CheckInScreen
    - CheckOutScreen
    - CreateReportScreen
+   
 
 2. **Services to implement**:
    - Functional geolocation
